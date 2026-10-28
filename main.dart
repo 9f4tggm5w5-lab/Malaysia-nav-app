@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -32,6 +33,10 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
   final String _currentRoute = "KLCC ➔ TRX (via SMART Tunnel)";
   final double _estimatedTollRM = 3.00;
 
+  // রিয়েল-টাইম স্পিড এবং স্পিড লিমিট স্টেট
+  double _currentSpeedKmH = 95.0; // সিমুলেটেড রিয়েল-টাইম স্পিড
+  final double _roadSpeedLimit = 90.0; // বর্তমান রোডের স্পিড লিমিট
+
   // মালয়েশিয়ার হাইওয়ের ডামি AES ক্যামেরা ডাটাবেস
   final List<Map<String, dynamic>> _aesCamerasList = [
     {"location": "PLUS Highway (KM 301.6 Northbound)", "limit": 110, "distanceKm": 0.4},
@@ -39,7 +44,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     {"location": "LDP (Kelana Jaya)", "limit": 80, "distanceKm": 0.2},
   ];
 
-  // নতুন ফিচার: লাইভ ট্রাফিক ও জ্যাম ডেনসিটি ডাটা
+  // লাইভ ট্রাফিক স্ট্যাটাস
   final List<Map<String, dynamic>> _trafficStatusList = [
     {"highway": "Federal Highway", "condition": "Heavy Traffic (Jammed)", "color": Colors.red},
     {"highway": "LDP Highway", "condition": "Smooth Flow", "color": Colors.green},
@@ -170,12 +175,13 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isOverSpeed = _currentSpeedKmH > _roadSpeedLimit;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigo,
-        title: const Text('MY Nav - Live Traffic', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('MY Nav - Speedometer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
-          // ট্রাফিক স্ট্যাটাস দেখার জন্য ডায়ালগ বাটন
           IconButton(
             icon: const Icon(Icons.traffic, color: Colors.white),
             onPressed: () {
@@ -230,7 +236,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                 children: [
                   Icon(Icons.map, size: 100, color: Colors.indigoAccent),
                   SizedBox(height: 10),
-                  Text('Mapbox Live Traffic View Area', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text('Mapbox Live View with Speed Tracking', style: TextStyle(fontSize: 16, color: Colors.grey)),
                 ],
               ),
             ),
@@ -262,6 +268,45 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+
+          // নতুন ফিচার: রিয়েল-টাইম স্পিডোমিটার উইজেট (স্ক্রিনের নিচের বামপাশে)
+          Positioned(
+            bottom: 30,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isOverSpeed ? Colors.red.shade700 : Colors.black87,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${_currentSpeedKmH.toInt()}',
+                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'KM/H',
+                    style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'Limit: ${_roadSpeedLimit.toInt()}',
+                      style: TextStyle(color: isOverSpeed ? Colors.red : Colors.black87, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
