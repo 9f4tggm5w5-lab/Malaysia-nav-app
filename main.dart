@@ -32,23 +32,28 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
   final String _currentRoute = "KLCC ➔ TRX (via SMART Tunnel)";
   final double _estimatedTollRM = 3.00;
 
-  // মালয়েশিয়ার হাইওয়ের ডামি AES ক্যামেরা ও স্পিড লিমিট ডাটাবেস
+  // মালয়েশিয়ার হাইওয়ের ডামি AES ক্যামেরা ডাটাবেস
   final List<Map<String, dynamic>> _aesCamerasList = [
     {"location": "PLUS Highway (KM 301.6 Northbound)", "limit": 110, "distanceKm": 0.4},
     {"location": "MEX Highway (Salak Tinggi)", "limit": 90, "distanceKm": 1.2},
-    {"location": "LDP (Kelana Jaya)", "limit": 80, "distanceKm": 0.2}, // ক্লোজ প্রক্সিমিটি অ্যালার্ট ট্রিগার করার জন্য
+    {"location": "LDP (Kelana Jaya)", "limit": 80, "distanceKm": 0.2},
+  ];
+
+  // নতুন ফিচার: লাইভ ট্রাফিক ও জ্যাম ডেনসিটি ডাটা
+  final List<Map<String, dynamic>> _trafficStatusList = [
+    {"highway": "Federal Highway", "condition": "Heavy Traffic (Jammed)", "color": Colors.red},
+    {"highway": "LDP Highway", "condition": "Smooth Flow", "color": Colors.green},
+    {"highway": "NKVE", "condition": "Moderate Flow", "color": Colors.orange},
   ];
 
   @override
   void initState() {
     super.initState();
-    // অ্যাপ চালু হওয়ার সাথে সাথে কাছাকাছি স্পিড ক্যামেরা চেক করার লজিক
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkNearbySpeedCameras();
     });
   }
 
-  // প্রক্সিমিটি ও স্পিড ক্যামেরা অ্যালার্ট লজিক
   void _checkNearbySpeedCameras() {
     for (var cam in _aesCamerasList) {
       double distance = cam["distanceKm"];
@@ -104,7 +109,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     );
   }
 
-  // কমিউনিটি রিপোর্ট ট্রিগার
   void _triggerHazardReport(String type) {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -115,7 +119,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     );
   }
 
-  // রিপোর্ট বটম শিট
   void _showReportBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -170,8 +173,30 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigo,
-        title: const Text('MY Nav', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('MY Nav - Live Traffic', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
+          // ট্রাফিক স্ট্যাটাস দেখার জন্য ডায়ালগ বাটন
+          IconButton(
+            icon: const Icon(Icons.traffic, color: Colors.white),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Live Highway Traffic Status'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _trafficStatusList
+                        .map((traffic) => ListTile(
+                              leading: Icon(Icons.circle, color: traffic["color"], size: 16),
+                              title: Text(traffic["highway"]!),
+                              subtitle: Text(traffic["condition"]),
+                            ))
+                        .toList(),
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.shield, color: Colors.white),
             onPressed: () {
@@ -197,7 +222,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
       ),
       body: Stack(
         children: [
-          // ম্যাপ ব্যাকগ্রাউন্ড প্লেসহোল্ডার
           Container(
             color: Colors.grey.shade200,
             child: const Center(
@@ -206,7 +230,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                 children: [
                   Icon(Icons.map, size: 100, color: Colors.indigoAccent),
                   SizedBox(height: 10),
-                  Text('Mapbox Live View Area', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Text('Mapbox Live Traffic View Area', style: TextStyle(fontSize: 16, color: Colors.grey)),
                 ],
               ),
             ),
