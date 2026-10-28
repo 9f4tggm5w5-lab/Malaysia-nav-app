@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -30,77 +29,8 @@ class MapHomeScreen extends StatefulWidget {
 }
 
 class _MapHomeScreenState extends State<MapHomeScreen> {
-  // ডামি নেভিগেশন স্টেট
-  bool _isNavigating = false;
-  String _currentRoute = "KLCC ➔ TRX (via SMART Tunnel)";
-  double _estimatedTollRM = 3.00; // Touch 'n Go toll fee
-  int _speedLimitKm h = 90;
-  
-  // ডামি AES স্পিড ক্যামেরা কোঅর্ডিনেট ডাটা
-  final List<Map<String, String>> _aesCamerasList = [
-    {"location": "PLUS Highway (KM 301.6 Northbound)", "limit": "110 km/h"},
-    {"location": "MEX Highway (Salak Tinggi)", "limit": "90 km/h"},
-    {"location": "LDP (Kelana Jaya)", "limit": "80 km/h"},
-  ];
-
-  void _triggerHazardReport(String type) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('⚠️ Reported "$type" to nearby Malaysian drivers!'),
-        backgroundColor: Colors.deepOrange,
-      ),
-    );
-  }
-
-  void _showReportBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Report Hazard / Roadblock',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildReportItem(Icons.local_police, 'Police / Ops', Colors.blue),
-                  _buildReportItem(Icons.camera_alt, 'AES Trap', Colors.red),
-                  _buildReportItem(Icons.warning_amber, 'Traffic / Accident', Colors.amber),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildReportItem(IconData icon, String label, Color color) {
-    return InkWell(
-      onTap: () => _triggerHazardReport(label),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: color.withOpacity(0.2),
-            child: Icon(icon, color: color, size: 30),
-          ),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
+  final String _currentRoute = "KLCC ➔ TRX (via SMART Tunnel)";
+  final double _estimatedTollRM = 3.00;
 
   @override
   Widget build(BuildContext context) {
@@ -108,33 +38,10 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.indigo,
         title: const Text('MY Nav', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shield, color: Colors.white),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Active AES Cameras Nearby'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: _aesCamerasList
-                        .map((cam) => ListTile(
-                              leading: const Icon(Icons.camera_alt, color: Colors.red),
-                              title: Text(cam["location"]!),
-                              subtitle: Text('Limit: ${cam["limit"]}'),
-                            ))
-                        .toList(),
-                  ),
-                ),
-              );
-            },
-          )
-        ],
       ),
       body: Stack(
         children: [
-          // ম্যাপ ব্যাকগ্রাউন্ড ভিউ (Placeholder)
+          // ক্লিন ম্যাপ ব্যাকগ্রাউন্ড প্লেসহোল্ডার
           Container(
             color: Colors.grey.shade200,
             child: const Center(
@@ -143,13 +50,13 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                 children: [
                   Icon(Icons.map, size: 100, color: Colors.indigoAccent),
                   SizedBox(height: 10),
-                  Text('Mapbox Live View Area', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  Text('Clean Map View - Ready for Custom Features', style: TextStyle(fontSize: 16, color: Colors.grey)),
                 ],
               ),
             ),
           ),
 
-          // ওপরের কাস্টম রুট এবং টোল ইনফো ব্যানার
+          // রুট এবং টোল ইনফো ব্যানার
           Positioned(
             top: 20,
             left: 15,
@@ -176,18 +83,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                   ],
                 ),
               ),
-            ),
-          ),
-
-          // নিচ থেকে কমিউনিটি রিপোর্ট বাটন
-          Positioned(
-            bottom: 30,
-            right: 20,
-            child: FloatingActionButton.extended(
-              onPressed: _showReportBottomSheet,
-              backgroundColor: Colors.deepOrange,
-              icon: const Icon(Icons.add_location_alt, color: Colors.white),
-              label: const Text('Report Hazard', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
